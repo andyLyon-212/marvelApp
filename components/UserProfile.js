@@ -10,14 +10,17 @@ import {
   HStack,
   Stack,
   View,
-  NativeBaseProvider,
 } from 'native-base'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const UserProfile = () => {
   const [characters, setCharacters] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const url = `http://gateway.marvel.com/v1/public/characters?id=1009610&ts=100&apikey=1c4016f537637fc31f2769525eb6fd0e&hash=3d768cd46eba3edb6492d3cb44883f21`
-  useEffect(() => {
+
+  useEffect(async () => {
+    const characterId = await getCharacters()
+    console.log(characterId)
+    const url = `http://gateway.marvel.com/v1/public/characters?id=${characterId}&ts=100&apikey=1c4016f537637fc31f2769525eb6fd0e&hash=3d768cd46eba3edb6492d3cb44883f21`
     try {
       fetch(url)
         .then((res) => res.json())
@@ -29,6 +32,14 @@ export const UserProfile = () => {
       console.log(error)
     }
   }, [])
+  const getCharacters = async () => {
+    const response = await AsyncStorage.getItem('characterId')
+    if (!response) {
+      return '1017603'
+    } else {
+      return response
+    }
+  }
   return (
     <View>
       {isLoading ? (

@@ -8,8 +8,10 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.15.14",
     "expo": "~43.0.2",
     "expo-status-bar": "~1.1.0",
+    "jquery": "^3.6.0",
     "native-base": "^3.2.2",
     "react": "17.0.1",
     "react-dom": "17.0.1",
@@ -17,7 +19,8 @@
     "react-native-safe-area-context": "^3.3.2",
     "react-native-svg": "^12.1.1",
     "react-native-swipe-list-view": "^3.2.9",
-    "react-native-web": "^0.17.5"
+    "react-native-web": "^0.17.5",
+    "timekit-booking": "^2.9.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Dimensions, TouchableOpacity, View } from 'react-native'
+import UserProfile from './UserProfile'
 
 import {
   NativeBaseProvider,
@@ -7,8 +8,7 @@ import {
   Text,
   Pressable,
   Heading,
-  IconButton,
-  Button,
+  Input,
   Icon,
   HStack,
   Avatar,
@@ -17,13 +17,17 @@ import {
 } from 'native-base'
 import { SwipeListView } from 'react-native-swipe-list-view'
 import { MaterialIcons, Ionicons, Entypo } from '@expo/vector-icons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const DashboardTable = () => {
   const [mode, setMode] = useState('Basic')
   const [characters, setCharacters] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const url = `http://gateway.marvel.com/v1/public/characters?nameStartsWith=spi&ts=100&apikey=1c4016f537637fc31f2769525eb6fd0e&hash=3d768cd46eba3edb6492d3cb44883f21`
-  useEffect(() => {
+  const [value, setValue] = useState('')
+
+  useEffect(async () => {
+    const character = await getCharacters()
+    const url = `http://gateway.marvel.com/v1/public/characters?nameStartsWith=${character}&ts=100&apikey=1c4016f537637fc31f2769525eb6fd0e&hash=3d768cd46eba3edb6492d3cb44883f21`
     try {
       fetch(url)
         .then((res) => res.json())
@@ -36,18 +40,68 @@ export const DashboardTable = () => {
     }
   }, [])
 
+  const getCharacters = async () => {
+    const response = await AsyncStorage.getItem('character')
+    if (!response) {
+      return 'spi'
+    } else {
+      return response
+    }
+  }
+
+  const fetchData = async (event) => {
+    setValue(event.target.value)
+
+    const url = `http://gateway.marvel.com/v1/public/characters?nameStartsWith=${event.target.value}&ts=100&apikey=1c4016f537637fc31f2769525eb6fd0e&hash=3d768cd46eba3edb6492d3cb44883f21`
+    fetch(url)
+      .then((response) => response.json())
+      .then((response) => {
+        setIsLoading(true)
+        setCharacters(response.data.results)
+        setIsLoading(false)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    await AsyncStorage.setItem('character', event.target.value)
+  }
+
+  const saveInStorage = async (id) => {
+    await AsyncStorage.setItem('characterId', id)
+    window.location.reload(false)
+  }
+
   return (
     <View>
       {isLoading ? (
         <Text>Loading...</Text>
       ) : (
         <NativeBaseProvider>
-          <Box bg="white" flex="1" safeAreaTop>
-            <Heading p="4" pb="3" size="lg">
-              Characters
-            </Heading>
-            <Basic charactersInformation={characters} />
-          </Box>
+          <HStack mt="4" space="4">
+            <UserProfile />
+            <Box bg="white" flex="1" safeAreaTop>
+              <Heading p="4" pb="3" size="lg">
+                Characters
+              </Heading>
+              <Input
+                value={value}
+                w={{
+                  base: '75%',
+                  md: '25%',
+                }}
+                onChange={(text) => {
+                  fetchData(text)
+                }}
+                placeholder="Character name"
+              />
+              <Basic
+                charactersInformation={characters}
+                onChangeCraracter={(id) => {
+                  saveInStorage(id)
+                }}
+              />
+            </Box>
+          </HStack>
         </NativeBaseProvider>
       )}
     </View>
@@ -58,6 +112,12 @@ function Basic(props) {
   const data = props.charactersInformation
 
   const [listData, setListData] = useState(data)
+  const [id, setId] = useState('1009610')
+
+  const changeCharacter = (id) => {
+    setId(id)
+    props.onChangeCraracter(id)
+  }
 
   const closeRow = (rowMap, rowKey) => {
     if (rowMap[rowKey]) {
@@ -97,6 +157,13 @@ function Basic(props) {
               </Text>
               <Text isTruncated maxW="300" w="80%">
                 {item.description}
+              </Text>
+              <Text
+                onPress={() => {
+                  changeCharacter(item.id)
+                }}
+              >
+                View Details
               </Text>
             </VStack>
             <Spacer />
