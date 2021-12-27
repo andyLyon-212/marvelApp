@@ -112,7 +112,7 @@ function Basic(props) {
   const data = props.charactersInformation
 
   const [listData, setListData] = useState(data)
-  const [id, setId] = useState('1009610')
+  const [id, setId] = useState('')
 
   const changeCharacter = (id) => {
     setId(id)
